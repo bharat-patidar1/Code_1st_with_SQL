@@ -22,7 +22,7 @@ export const sendInviteEmail = async (email, tempPassword) => {
       <p>Your temporary password is: <b>${tempPassword}</b></p>
       <p>Please log in and change your password after first login.</p>
       <br/>
-      <p>Login page: <a href="http://localhost:5173/login">Click here</a></p>
+      <p>Login page: <a href="https://code-1st-healthcare.onrender.com">Click here</a></p>
       <p>Regards,<br/>Code 1st Team</p>
     `
   };
