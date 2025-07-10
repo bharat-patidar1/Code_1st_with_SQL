@@ -31,7 +31,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-    origin: "https://code1stwithsql-production.up.railway.app",
+    origin: "https://code-1st-healthcare.onrender.com",
     credentials: true
 }));
 
