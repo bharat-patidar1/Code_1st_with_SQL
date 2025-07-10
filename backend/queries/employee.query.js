@@ -21,7 +21,7 @@ export const findOneByEmail = ({email})=>{
 
 export const create = ({name , email , phoneNumber , department , location , password })=>{
   return pool.query(`
-  INSERT INTO Employee (name, email, phoneNumber, department, location, password, role)
+  INSERT INTO employee (name, email, phoneNumber, department, location, password, role)
   VALUES (?, ?, ?, ?, ?, ?, 'Employee');`,[name , email , phoneNumber , department , location , password ]);
 }
 
@@ -36,7 +36,7 @@ WHERE email = ?
 
 // ❌ Delete employee by ID
 export const findByIdAndDelete = ({employeeId})=>{
-  return pool.query(`DELETE FROM Employee WHERE _id = ?`,[employeeId])
+  return pool.query(`DELETE FROM employee WHERE _id = ?`,[employeeId])
 } //metadata
 
 // 📄 Get all employees with optional search keyword (use LIKE)
@@ -54,12 +54,12 @@ export const findByQuery = ({keyword})=>{
 // 🔎 Get employee by ID (without password)
 export const findByIdWithoutPassword = `
   SELECT id, name, email, department, phoneNumber, location, status, createdAt
-  FROM Employee WHERE id = ?;
+  FROM employee WHERE id = ?;
 `;
 
 // 📊 Get attendance for an employee (for dashboard)
 export const findAttendanceByEmployeeId = `
-  SELECT * FROM Attendance
+  SELECT * FROM attendance
   WHERE employeeId = ? AND MONTH(date) = ? AND YEAR(date) = ?
   ORDER BY date DESC LIMIT 7;
 `;
