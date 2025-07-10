@@ -39,6 +39,7 @@ export default function EmployeeDashboard() {
   const handleClockOut = async () => {
     try {
       setLoading(true);
+      // dispatch(setIsClockedin(false));
       const response = await axios.post(`${Attendance_API_END_POINT}/clockOut`, {withCredentials : true});
       if (response.data.success) {
         dispatch(setIsClockedin(false));

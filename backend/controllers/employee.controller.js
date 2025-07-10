@@ -4,10 +4,10 @@ import { sendInviteEmail } from '../utils/sendInviteEmail.js'
 import jwt from 'jsonwebtoken'
 import { employee_findOneByEmail , employee_create, employee_findByEmailAndUpdatePassword, employee_findByIdAndDelete, emmployee_findByQuery, employee_findById } from "../services/employee.services.js";
 
-
 export const employeeRegister = async (req, res) => {
     try {
         const { name, email, phoneNumber, department, location } = req.body;
+        console.log(name)
         const existing = await employee_findOneByEmail({email});
         if (existing) {
             return res.status(400).json({
@@ -41,6 +41,7 @@ export const employeeLogin = async (req, res) => {
                 message: "Something is missing"
             })
         }
+      
         const employee = await employee_findOneByEmail({email});
         if (!employee) {
             return res.status(400).json({
@@ -51,7 +52,7 @@ export const employeeLogin = async (req, res) => {
         const isPassMatch = await bcrypt.compare(password, employee.password);
         if (!isPassMatch) {
             return res.status(400).json({
-                success: true,
+                success: false,
                 message: "Password is incorrect"
             })
         }
@@ -66,7 +67,8 @@ export const employeeLogin = async (req, res) => {
         })
     } catch (error) {
         return res.status(500).json({
-            message: "Failed to Login"
+            message: "Failed to Login",
+            success: false
         })
     }
 }
@@ -80,7 +82,7 @@ export const updatePassword = async (req, res) => {
                 message: "Something is missing"
             })
         }
-        const employee = await employee_findOneByEmail(email);
+        const employee = await employee_findOneByEmail({email});
         if (!employee) {
             return res.status(400).json({
                 success: false,
@@ -141,7 +143,7 @@ export const getAllEmployees = async (req, res) => {
         if (!allEmployees) {
             return res.status(404).json({
                 message: "NO Employees",
-                success: true
+                success: false
             })
         }
         return res.status(200).json({

@@ -66,8 +66,8 @@ const createAttendaceTable = `CREATE TABLE IF NOT EXISTS attendance (
 const createSessionsTable = `CREATE TABLE IF NOT EXISTS attendance_session (
   _id INT AUTO_INCREMENT PRIMARY KEY,
   attendanceId INT NOT NULL,  -- FK to attendance table
-  clockIn TIME NOT NULL,
-  clockOut TIME ,
+  clockIn VARCHAR(255) NOT NULL,
+  clockOut VARCHAR(255) ,
   duration FLOAT NOT NULL,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

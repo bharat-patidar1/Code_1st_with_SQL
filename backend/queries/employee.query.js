@@ -16,7 +16,7 @@ export const findAllName = ()=>{
 
 
 export const findOneByEmail = ({email})=>{
-  return pool.query(`SELECT * FROM Employee WHERE email = ?;`,[email]);
+  return pool.query(`SELECT * FROM employee WHERE email = ?`,[email]);
 }
 
 export const create = ({name , email , phoneNumber , department , location , password })=>{
@@ -31,7 +31,7 @@ export const findByEmailAndUpdatePassword = ({password , email})=>{
   return pool.query(`UPDATE employee
 SET password = ?
 WHERE email = ?
-RETURNING *;`,[password , email])
+`,[password , email])
 }
 
 // ❌ Delete employee by ID

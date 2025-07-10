@@ -22,7 +22,7 @@ export const employee_create = async (employeeData) => {
 
 export const employee_findByEmailAndUpdatePassword = async (data) => {
     const [employee] = await findByEmailAndUpdatePassword(data);
-    return employee[0];
+    return employee; //meta data
 }    
 
 export const employee_findByIdAndDelete = async (id) => {

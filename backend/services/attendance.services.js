@@ -1,5 +1,5 @@
 import pool from '../utils/dbConnect.js'
-import { findWorkByDates ,  findAllByEmployeeId , findByDateWithEmployee , findByEmployeeAndDate , findSessionById, saveAttendance} from "../queries/attendance.query.js"
+import { findWorkByDates ,  findAllByEmployeeId , findByDateWithEmployee , findByEmployeeAndDate , saveSessionById, saveAttendanceById, findSessionsByAttendanceId , saveSessionClockInByAttendanceId, createNewSessionByAttendanceId} from "../queries/attendance.query.js"
 
 export const attendance_findWorkByDates = async(date)=>{
     const [attendance] = await findWorkByDates(date)
@@ -22,7 +22,7 @@ export const attendance_findAllByEmployeeId = async(employeeId)=>{
 }
 
 
-export const createAttendanceWithSession = async ({ employeeId, todayDate }) => {
+export const createAttendanceWithSession = async ({ employeeId, date }) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -30,32 +30,23 @@ export const createAttendanceWithSession = async ({ employeeId, todayDate }) => 
     const [attendanceResult] = await connection.query(
       `INSERT INTO attendance (employeeId, date, totalHoursToday, isCompleteDay)
        VALUES (?, ?, 0, FALSE)`,
-      [employeeId, todayDate]
+      [employeeId, date]
     );
     const attendanceId = attendanceResult.insertId;
     try {
-      const clockInTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-      console.log("ClockIn time:", clockInTime);
-    
-      await connection.query(
-        `INSERT INTO attendance_session (attendanceId, clockIn, clockOut, duration)
+      const clockInTime = new Date().toISOString().split(".")[0]
+      const [result] = await connection.query(
+        `INSERT INTO attendance_session(attendanceId, clockIn, clockOut, duration)
          VALUES (?, ?, NULL, 0)`,
         [attendanceId, clockInTime]
       );
-      console.log("Successfully inserted attendance session");
+      console.log("result",result)
     } catch (err) {
-      console.error("Error inserting into attendance_session:", err);
       throw err; // Re-throw to trigger rollback
     }
     
-    // const clockInTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    // // 2. Insert into attendance_session table
-    //  await connection.query(`INSERT INTO attendance_session (attendanceId, clockIn, clockOut, duration)
-    //    VALUES (?, ?, NULL, 0)`,
-    //   [attendanceId, clockInTime]
-    // )
-    
     await connection.commit();
+
     return { success: true, attendanceId };
 
   } catch (err) {
@@ -66,14 +57,30 @@ export const createAttendanceWithSession = async ({ employeeId, todayDate }) => 
   }
 };
 
-export const attendance_findSessionById = async({attendanceId})=>{
-    const [attendance] = await findSessionById({attendanceId})
-    return attendance;
+export const attendance_findSessionsByAttendanceId = async(attendanceId)=>{
+    const [sessions] = await findSessionsByAttendanceId(attendanceId)
+    return sessions;
 };
 
-export const attendance_saveAttendance = async({attendanceId , clockInTime})=>{
-    const [attendance] = await saveAttendance({attendanceId , clockInTime})
-    return attendance;
+export const attendance_saveSessionById = async({sessionId , clockOut , duration})=>{
+    const [result] = await saveSessionById({sessionId , clockOut , duration})
+    return result;
+}
+
+export const attendance_saveAttendanceById = async({attendanceId , totalHoursToday , isCompleteDay})=>{
+    const [result] = await saveAttendanceById({attendanceId , totalHoursToday , isCompleteDay})
+    return result;
+}
+
+export const attendance_saveSessionClockInByAttendanceId = async(data)=>{
+  console.log("data",data)
+     await saveSessionClockInByAttendanceId(data)
+    return true;
+}
+
+export const attendance_createNewSessionByAttendanceId = async({attendanceId , clockInTime})=>{
+    const [result] = await createNewSessionByAttendanceId({attendanceId , clockInTime})
+    return result;
 }
 
 
