@@ -1,4 +1,4 @@
-import { Attendance } from "../models/attendance.model.js";
+import { attendance_findByEmployeeAndDate , attendance_findAllByEmployeeId , createAttendanceWithSession , attendance_findSessionById} from "../services/attendance.services.js";
 
 
 export const employeeClockIn = async (req, res) => {
@@ -6,25 +6,11 @@ export const employeeClockIn = async (req, res) => {
         const employeeId = req.employeeId;
         const todayDate = new Date().toISOString().split("T")[0]
         // Check if attendance for today already exists
-        let attendance = await Attendance.findOne({
-            employee: employeeId,
-            date: todayDate
-        })
+        let attendance = await attendance_findByEmployeeAndDate({employeeId , date : todayDate})
         // 2. If not exists, create it
         if (!attendance) {
-            attendance = await Attendance.create({
-                employee: employeeId,
-                date: todayDate,
-                sessions: [
-                    {
-                        clockIn: new Date(), // 👈 Directly add clockIn on create
-                        clockOut: null,
-                        duration: 0
-                    }
-                ],
-                totalHoursToday: 0,
-                isCompleteDay: false
-            });
+            console.log("Attendance not found")
+            attendance = await createAttendanceWithSession({employeeId , todayDate});
             return res.status(200).json({
                 success: true,
                 message: "Clocked in successfully (new attendance created)",
@@ -32,7 +18,10 @@ export const employeeClockIn = async (req, res) => {
             });
         }
         //3. Check if already clocked in without last session clockout
-        const lastSession = attendance.sessions.at(-1);
+        
+        const sessions = await attendance_findSessionById({attendanceId : attendance._id})
+
+        const lastSession = sessions.at(-1);
         if (lastSession && !lastSession.clockOut) {
             return res.status(400).json({
                 success: false,
@@ -67,10 +56,8 @@ export const employeeClockOut = async (req, res) => {
         const employeeId = req.employeeId
         const todayDate = new Date().toISOString().split("T")[0];
 
-        const attendance = await Attendance.findOne({
-            employee: employeeId,
-            date: todayDate
-        })
+        const attendance = await attendance_findByEmployeeAndDate({employeeId , date: todayDate});
+        console.log(attendance)
         if (!attendance) {
             return res.status(400).json({
                 success: false,
@@ -79,7 +66,8 @@ export const employeeClockOut = async (req, res) => {
         }
 
         //get last session
-        const lastSession = attendance.sessions.at(-1);
+        const sessions = await attendance_findSessionById({attendanceId : attendance._id})
+        const lastSession = sessions.at(-1);
         if (!lastSession || !lastSession.clockIn || lastSession.clockOut) {
             return res.status(400).json({
                 success: false,
@@ -102,7 +90,7 @@ export const employeeClockOut = async (req, res) => {
         const totalInHours = attendance.totalHoursToday / 60;
         attendance.totalHoursToday = parseFloat(totalInHours.toFixed(2));
         attendance.isCompleteDay = totalInHours >= 8;
-        await attendance.save();
+        await attendance_saveAttendance({attendanceId : attendance._id , clockInTime : lastSession.clockIn});
 
         return res.status(200).json({
             success: true,
@@ -122,9 +110,7 @@ export const AttendanceHistoryById = async (req, res) => {
     try {
         const employeeId = req.employeeId;
 
-        const history = await Attendance.find({
-            employee: employeeId
-        }).sort({ date: -1 });
+        const history = await attendance_findAllByEmployeeId({employeeId});
         return res.status(200).json({
             success: true,
             history

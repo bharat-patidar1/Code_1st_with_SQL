@@ -72,7 +72,7 @@ const MyLeaves = () => {
             </div>
         );
     }
-
+    console.log(leaves)
     if (leaves.length === 0) {
         return <p className="text-muted-foreground">No leave applications found.</p>;
     }

@@ -1,14 +1,13 @@
-import { Admin } from "../models/admin.model.js"
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { Attendance } from "../models/attendance.model.js";
-import { Employee } from "../models/employee.model.js";
 import moment from "moment";
-
+import { attendance_findByDateWithEmployee, attendance_findWorkByDates } from "../services/attendance.services.js";
+import { admin_findOne , admin_create , admin_findOneByEmail , admin_findOneAndUpdatePassword } from "../services/admin.services.js";
+import { employee_findAll, employee_findAllName } from "../services/employee.services.js";
 export const adminRegister = async (req, res) => {
     try {
 
-        const adminExists = await Admin.findOne();
+        const adminExists = await admin_findOne();
         if (adminExists) {
             return res.status(401).json({
                 success: false,
@@ -25,12 +24,13 @@ export const adminRegister = async (req, res) => {
         };
         const hashedPass = await bcrypt.hash(password, 10)
 
-        await Admin.create({
+       const admin =  await admin_create({
             name, email, phoneNumber, password: hashedPass, role
         })
         res.status(201).json({
             success: true,
-            message: "Admin registered Successfully"
+            message: "Admin registered Successfully",
+            admin
         })
 
     } catch (error) {
@@ -47,11 +47,11 @@ export const adminLogin = async (req, res) => {
                 message: "Something is missing"
             })
         }
-        const admin = await Admin.findOne({ email });
+        const admin = await admin_findOneByEmail({email});
         if (!admin) {
             return res.status(400).json({
                 success: false,
-                message: "Incorrect email or password"
+                message: "Incorrect email or Admin not found"
             })
         }
         const isPassMatch = await bcrypt.compare(password, admin.password)
@@ -62,7 +62,7 @@ export const adminLogin = async (req, res) => {
             })
         }
         const tokenData = {
-            adminId: Admin._id,
+            adminId: admin._id,
             role: "Admin"
         }
         const token = jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' })
@@ -106,13 +106,12 @@ export const getWorkHours = async (req, res) => {
         const todayStr = today.toISOString().split("T")[0];
 
         // Fetch attendance entries within date range
-        const attendanceRecords = await Attendance.find({
-            date: { $gte: startDateStr, $lte: todayStr },
-        }).populate("employee", "name");
+        const attendanceRecords = await attendance_findWorkByDates({
+            date: {startDateStr , todayStr },
+        })
 
         // Group total hours by employee
         const workMap = new Map();
-
         for (const record of attendanceRecords) {
             const empId = record.employee._id.toString();
             const name = record.employee.name;
@@ -124,7 +123,7 @@ export const getWorkHours = async (req, res) => {
         }
 
         // Ensure all employees are listed (even if they have 0 hours)
-        const allEmployees = await Employee.find({}, "name");
+        const allEmployees = await employee_findAllName();
 
         const result = allEmployees.map((emp) => {
             const data = workMap.get(emp._id.toString());
@@ -152,7 +151,7 @@ export const getAttendanceSummary = async (req, res) => {
     try {
         const { view = "daily", date } = req.query;
 
-        const allEmployees = await Employee.find();
+        const allEmployees = await employee_findAll();
         const totalEmployees = allEmployees.length;
 
         if (view === "daily") {
@@ -160,7 +159,7 @@ export const getAttendanceSummary = async (req, res) => {
                 return res.status(400).json({ success: false, message: "Date is required for daily view." });
             }
 
-            const attendanceDocs = await Attendance.find({ date }).populate({ path: 'employee' });
+            const attendanceDocs = await attendance_findByDateWithEmployee(date);
             const presentEmployees = attendanceDocs.map((att) => ({
                 _id: att.employee._id,
                 name: att.employee.name,
@@ -190,7 +189,7 @@ export const getAttendanceSummary = async (req, res) => {
             for (let i = 6; i >= 0; i--) {
                 const day = moment().subtract(i, 'days').format("YYYY-MM-DD");
 
-                const attendanceDocs = await Attendance.find({ date: day }).populate({ path: 'employee' });
+                const attendanceDocs = await attendance_findByDateWithEmployee({date : day});
 
                 const presentEmployees = attendanceDocs.map((att) => ({
                     _id: att.employee._id,
@@ -242,7 +241,7 @@ export const updatePassword = async (req, res) => {
                 message: "Something is missing"
             })
         }
-        const admin = await Admin.findOne({ email });
+        const admin = await admin_findOneByEmail({email});
         if (!admin) {
             return res.status(400).json({
                 success: false,
@@ -257,7 +256,7 @@ export const updatePassword = async (req, res) => {
             })
         }
         const newHashPass = await bcrypt.hash(newPassword, 10);
-        const updatedAdmin = await Admin.findOneAndUpdate({ email }, { $set: { password: newHashPass } }, { new: true });
+        const updatedAdmin = await admin_findOneAndUpdatePassword({password : newHashPass , email});
         return res.status(200).json({
             success: true,
             admin: updatedAdmin,

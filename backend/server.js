@@ -1,6 +1,4 @@
 import express from 'express';
-import dbConnect from './utils/dbConnect.js';
-import dotenv from 'dotenv';
 import adminRoute from './routes/admin.route.js';
 import cors from 'cors';
 import employeeRoute from './routes/employee.route.js';
@@ -8,13 +6,25 @@ import attendanceRoute from './routes/attendance.route.js';
 import leaveRoute from './routes/leave.route.js';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import pool from './utils/dbConnect.js';
+//no need for dotenv here , dbConnect sbse pehle run hori
+// import dotenv from 'dotenv';
+// dotenv.config();
 
-
-dotenv.config({});
-dbConnect();
+// dbConnect();
 const _dirname = path.resolve()
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+(async () => {
+    try {
+      await pool.query('SELECT 1');
+      console.log('✅ MySQL connected');
+    } catch (err) {
+      console.error('❌ Failed to connect to DB:', err.message);
+      process.exit(1);
+    }
+  })();
 
 // Middleware
 app.use(express.json());

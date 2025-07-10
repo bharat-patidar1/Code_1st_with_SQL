@@ -1,4 +1,5 @@
-import { Leaves } from '../models/leave.model.js'
+
+import { leave_create, leave_findByEmployeeId, leave_findAllLeavesWithEmployee, leave_findById, leave_findByIdAndDelete, leave_findByIdAndEmployeeId, leave_updateStatusById } from '../services/leaves.services.js';
 
 
 export const applyLeave = async (req, res) => {
@@ -24,8 +25,8 @@ export const applyLeave = async (req, res) => {
             });
         }
 
-        const leaveApplication = await Leaves.create({
-            employee: employeeId,
+        const leaveApplication = await leave_create({
+            employeeId,
             leaveType,
             fromDate: from,
             toDate: to,
@@ -50,7 +51,7 @@ export const applyLeave = async (req, res) => {
 export const getEmployeeLeaves = async (req, res) => {
     try {
         const employeeId = req.employeeId;
-        const leaves = await Leaves.find({ employee: employeeId });
+        const leaves = await leave_findByEmployeeId({ employeeId });
         if (!leaves) {
             return res.status(400).json({
                 success: false,
@@ -74,7 +75,7 @@ export const getEmployeeLeaves = async (req, res) => {
 
 export const getAllLeaves = async (req, res) => {
     try {
-        const allLeaves = await Leaves.find().populate({path : 'employee'});
+        const allLeaves = await leave_findAllLeavesWithEmployee();
         if (!allLeaves) {
             return res.status(400).json(
                 {
@@ -108,15 +109,14 @@ export const updateLeaveStatus = async (req, res) => {
             })
         }
 
-        const leave = await Leaves.findById(leaveId);
+        const leave = await leave_findById({leaveId});
         if (!leave) {
             return res.status(400).json({
                 success: false,
                 message: "Leave application not found"
             })
         }
-        leave.status = status;
-        await leave.save();
+        await leave_updateStatusById({status , leaveId});
         return res.status(200).json({
             success: true,
             message: "Status Updated Successfully"
@@ -136,7 +136,7 @@ export const deleteLeave = async (req, res) => {
         const employeeId = req.employeeId;
         const leaveId = req.params.id;
 
-        const leave = await Leaves.findOne({ _id: leaveId , employee: employeeId });
+        const leave = await leave_findByIdAndEmployeeId({leaveId , employeeId});
 
         if (!leave) {
             return res.status(404).json({ success: false, message: "Leave not found" });
@@ -146,7 +146,7 @@ export const deleteLeave = async (req, res) => {
             return res.status(400).json({ success: false, message: "Only pending leaves can be deleted" });
         }
 
-        await Leaves.findByIdAndDelete(leaveId);
+        await leave_findByIdAndDelete({leaveId});
         return res.status(200).json({ success: true, message: "Leave deleted successfully" });
 
     } catch (error) {

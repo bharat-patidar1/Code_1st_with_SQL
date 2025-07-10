@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "nodemon server.js",
     "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "init-db" : "node utils/setupMySql/initDB.js"
+
   },
   "keywords": [],
   "author": "",

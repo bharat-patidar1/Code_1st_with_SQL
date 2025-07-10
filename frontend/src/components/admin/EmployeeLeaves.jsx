@@ -93,10 +93,12 @@ const EmployeeLeaves = () => {
                                 </tr>
                             </thead>
                             <tbody>
+                                {console.log(allLeaves[1])}
                                 {allLeaves.map((leave, index) => (
+                                    console.log(leave),
                                     <tr key={leave._id} className="border-t hover:bg-gray-50">
                                         <td className="p-2 border">{index + 1}</td>
-                                        <td className="p-2 border">{leave.employee.name}</td>
+                                        <td className="p-2 border">{leave.employeeName}</td>
                                         <td className="p-2 border capitalize">{leave.leaveType}</td>
                                         <td className="p-2 border">{new Date(leave.fromDate).toLocaleDateString()}</td>
                                         <td className="p-2 border">{new Date(leave.toDate).toLocaleDateString()}</td>
