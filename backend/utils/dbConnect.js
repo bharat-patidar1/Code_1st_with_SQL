@@ -10,7 +10,7 @@ const pool = createPool({
     password : process.env.DB_PASSWORD,
     database : "code1sthealthcare",
     waitForConnections : true,
-    connectionLimit : 35,
+    connectionLimit : 15,
     queueLimit : 0
 }).promise(); 
 
