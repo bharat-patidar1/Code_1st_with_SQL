@@ -1,5 +1,8 @@
-import { attendance_findByEmployeeAndDate, attendance_findAllByEmployeeId, createAttendanceWithSession, attendance_saveSessionById, attendance_findSessionsByAttendanceId, attendance_saveSessionClockInByAttendanceId, attendance_createNewSessionByAttendanceId } from "../services/attendance.services.js";
+import { attendance_findByEmployeeAndDate, attendance_findAllByEmployeeId, createAttendanceWithSession, attendance_saveSessionById, attendance_findSessionsByAttendanceId, attendance_saveSessionClockInByAttendanceId, attendance_createNewSessionByAttendanceId, attendance_findByDateWithEmployee } from "../services/attendance.services.js";
 import { attendance_saveAttendanceById } from "../services/attendance.services.js";
+import calculateDurationInSeconds from "../utils/calculateSeconds.js";
+import getIndianCurrentTime from "../utils/getIndianCurrentTime.js";
+import secondsToHHMMSS from "../utils/secondsToHHMM.js";
 
 
 export const employeeClockIn = async (req, res) => {
@@ -14,7 +17,7 @@ export const employeeClockIn = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 message: "Clocked in successfully (new attendance created)",
-                attendance: attendance.attendanceId
+                totalHoursToday : '00:00:00'
             });
         }
         //3. Check if already clocked in without last session clockout
@@ -27,28 +30,23 @@ export const employeeClockIn = async (req, res) => {
                 message: "Already clocked in. Please clock out first."
             })
         }
-        console.log("lastSession", lastSession)
-        // 4. Add new clockIn session to existing attendance
-        //crreate new session here for attendence it
-      
-            await attendance_createNewSessionByAttendanceId({ attendanceId: attendance._id  , clockInTime : new Date().toISOString().split(".")[0]})
-        
-        
-    
-   
-    await attendance_saveSessionClockInByAttendanceId({ attendanceId: attendance._id, clockInTime: lastSession.clockIn });
-    return res.status(200).json({
-        success: true,
-        message: "Clocked in successfully",
-        attendance
-    });
 
-} catch (error) {
-    return res.status(500).json({
-        success: false,
-        message: "Clock In failed"
-    })
-}
+        await attendance_createNewSessionByAttendanceId({ attendanceId: attendance._id })
+        await attendance_saveSessionClockInByAttendanceId({ attendanceId: attendance._id });
+        console.log("attendance" , attendance)
+        return res.status(200).json({
+            success: true,
+            message: "Clocked in successfully",
+            attendance
+        });
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            success: false,
+            message: "Clock In failed"
+        })
+    }
 }
 
 export const employeeClockOut = async (req, res) => {
@@ -66,44 +64,33 @@ export const employeeClockOut = async (req, res) => {
         }
         //get last session
         const sessions = await attendance_findSessionsByAttendanceId({ attendanceId: attendance._id })
-        const lastSession = sessions.at(-1);
+        const lastSession = sessions[sessions.length - 1];
         if (!lastSession || !lastSession.clockIn || lastSession.clockOut) {
             return res.status(400).json({
                 success: false,
                 message: "You must clock in before clocking out.",
             });
         }
+        const clockOutTime = getIndianCurrentTime();
         //set clockout time
-        const now = new Date(); // Current time as Date object
-        const clockIn = new Date(lastSession.clockIn); // Convert clockIn to Date object
-
-        // Check for invalid date
-        if (isNaN(clockIn.getTime())) {
-            console.error("Invalid clockIn:", lastSession.clockIn);
-            return res.status(400).json({ message: "Invalid clockIn time" });
-        }
-
-        const durationInMinutes = Math.floor(
-            (now.getTime() - clockIn.getTime()) / (1000 * 60)
-        );
-
-        console.log("duration", durationInMinutes);
+        const duration = calculateDurationInSeconds(lastSession.clockIn, clockOutTime);
+        console.log("duration" , duration)
 
         //update sessions
-        await attendance_saveSessionById({ sessionId: lastSession._id, clockOut: now, duration: durationInMinutes })
+        await attendance_saveSessionById({ sessionId: lastSession._id, clockOut: clockOutTime, duration: parseInt(duration)});
 
         //update total hours
-        attendance.totalHoursToday = attendance.sessions.reduce((total, session) => {
-            return total + (session.duration || 0);
-        }, 0); // Total in minutes
-
-        // Optionally convert to hours:
-        const totalInHours = attendance.totalHoursToday / 60;
-        attendance.totalHoursToday = parseFloat(totalInHours.toFixed(2));
-        attendance.isCompleteDay = totalInHours >= 8;
-
+        const allSessions = await attendance_findSessionsByAttendanceId({ attendanceId: attendance._id })
+        const totalSecondsToday = allSessions.reduce((total, session) => total + (session.duration || 0), 0);
+        const hoursTotal = secondsToHHMMSS(totalSecondsToday);
+        console.log("hoursTotal" , hoursTotal)
+        const dayCompletion = (totalSecondsToday >= 28800);
         //update attendance
-        await attendance_saveAttendanceById({ attendanceId: attendance._id, totalHoursToday: attendance.totalHoursToday, isCompleteDay: attendance.isCompleteDay })
+        await attendance_saveAttendanceById({ attendanceId: attendance._id, totalHoursToday: hoursTotal, isCompleteDay: dayCompletion })
+        
+        const att = await attendance_findByDateWithEmployee({ employeeId, date: todayDate });
+        console.log("att" , att)
+
         return res.status(200).json({
             success: true,
             attendance,
@@ -122,17 +109,20 @@ export const AttendanceHistoryById = async (req, res) => {
     try {
         const employeeId = req.employeeId;
 
-        const history = await attendance_findAllByEmployeeId({ employeeId });
-        return res.status(200).json({
+        const attendance = await attendance_findAllByEmployeeId({ employeeId });
+        // Parse JSON sessions if they come as string
+        
+
+        res.status(200).json({
             success: true,
-            history
+            attendance
         });
     } catch (error) {
-        console.log(error)
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
-            message: "Failed to fetch attendance history"
-        })
+            message: error.message
+        });
     }
 }
+
 

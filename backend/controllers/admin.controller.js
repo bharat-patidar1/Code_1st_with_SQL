@@ -6,7 +6,7 @@ import { admin_findOne , admin_create , admin_findOneByEmail , admin_findOneAndU
 import { employee_findAll, employee_findAllName } from "../services/employee.services.js";
 export const adminRegister = async (req, res) => {
     try {
-
+        
         const adminExists = await admin_findOne();
         if (adminExists) {
             return res.status(401).json({

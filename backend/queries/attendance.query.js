@@ -1,11 +1,35 @@
 import pool from "../utils/dbConnect.js"
+import getIndianCurrentTime from "../utils/getIndianCurrentTime.js";
 // Check if today's attendance exists for employee (used in clockIn & clockOut)
+// In your db queries file (e.g., attendanceQueries.js)
 export const findAllByEmployeeId = ({ employeeId }) => {
-  return pool.query(`SELECT * 
-FROM attendance 
-WHERE employeeId = ? 
-ORDER BY date DESC;`, [employeeId])
-}
+  return pool.query(`
+        SELECT 
+            a._id,
+            a.employeeId,
+            DATE_FORMAT(a.date, '%Y-%m-%d') AS date,
+            a.totalHoursToday,
+            a.isCompleteDay,
+            a.createdAt,
+            a.updatedAt,
+            COALESCE(
+                (SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'id', s._id,
+                        'clockIn', s.clockIn,
+                        'clockOut', s.clockOut,
+                        'duration', s.duration,
+                        'createdAt', s.createdAt
+                    )
+                ) FROM attendance_session s 
+                WHERE s.attendanceId = a._id),
+                JSON_ARRAY()
+            ) AS sessions
+        FROM attendance a
+        WHERE a.employeeId = ?
+        ORDER BY a.date DESC
+    `, [employeeId]);
+};
 
 export const findSessionsByAttendanceId = ({attendanceId}) => {
   return pool.query(`SELECT * FROM attendance_session WHERE attendanceId = ?;`, [attendanceId])
@@ -53,14 +77,22 @@ export const saveAttendanceById = ({ attendanceId, totalHoursToday, isCompleteDa
 
 
 
-export const saveSessionClockInByAttendanceId = ({ attendanceId, clockInTime }) => {
-  console.log("Chalgya")
-  return pool.query(`UPDATE attendance_session SET clockIn = ? WHERE attendanceId = ?;`, [clockInTime, attendanceId])
-}
+export const saveSessionClockInByAttendanceId = ({ attendanceId }) => {
+  const currentTime = getIndianCurrentTime();
+  return pool.query(
+    `UPDATE attendance_session SET clockIn = ? WHERE attendanceId = ? AND clockIn IS NULL`, 
+    [currentTime, attendanceId]
+  );
+};
 
 
-export const createNewSessionByAttendanceId = ({attendanceId , clockInTime})=>{
+export const createNewSessionByAttendanceId = ({attendanceId })=>{
+const clockInTime = getIndianCurrentTime();
   return pool.query(`INSERT INTO attendance_session(attendanceId, clockIn, clockOut, duration)
    VALUES (?, ?, NULL, 0)`,
    [attendanceId, clockInTime]
 )};
+
+export const findByEmployeeId = ({employeeId})=>{
+  return pool.query(`SELECT * FROM attendance WHERE employeeId = ?;`, [employeeId])
+}

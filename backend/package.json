@@ -5,10 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon backend/server.js",
+    "dev": "nodemon server.js",
     "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
-    "start": "nodemon backend/server.js",
-    "init-db": "node backend/utils/setupMySql/initDB.js"
+    "start": "nodemon server.js",
+    "init-db": "node utils/setupMySql/initDB.js"
   },
   "keywords": [],
   "author": "",
@@ -17,12 +17,14 @@
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "datauri": "^4.1.0",
     "debug": "^4.4.1",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.30.1",
     "mongoose": "^8.16.1",
+    "multer": "^2.0.1",
     "mysql2": "^3.14.1",
     "nodemailer": "^7.0.4",
     "nodemon": "^3.1.10",

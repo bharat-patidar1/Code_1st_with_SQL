@@ -137,7 +137,7 @@ export const deleteLeave = async (req, res) => {
         const leaveId = req.params.id;
 
         const leave = await leave_findByIdAndEmployeeId({leaveId , employeeId});
-
+        console.log("leave" , leave)
         if (!leave) {
             return res.status(404).json({ success: false, message: "Leave not found" });
         }

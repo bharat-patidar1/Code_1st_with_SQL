@@ -1,5 +1,6 @@
 import pool from '../utils/dbConnect.js'
-import { findWorkByDates ,  findAllByEmployeeId , findByDateWithEmployee , findByEmployeeAndDate , saveSessionById, saveAttendanceById, findSessionsByAttendanceId , saveSessionClockInByAttendanceId, createNewSessionByAttendanceId} from "../queries/attendance.query.js"
+import { findWorkByDates ,  findAllByEmployeeId , findByDateWithEmployee , findByEmployeeAndDate , saveSessionById, saveAttendanceById, findSessionsByAttendanceId , saveSessionClockInByAttendanceId, createNewSessionByAttendanceId, findByEmployeeId} from "../queries/attendance.query.js"
+import getIndianCurrentTime from '../utils/getIndianCurrentTime.js';
 
 export const attendance_findWorkByDates = async(date)=>{
     const [attendance] = await findWorkByDates(date)
@@ -17,8 +18,8 @@ export const attendance_findByEmployeeAndDate = async({employeeId , date})=>{
 }
 
 export const attendance_findAllByEmployeeId = async(employeeId)=>{
-    const [attendance] = await findAllByEmployeeId(employeeId)
-    return attendance;
+    const [attendances] = await findAllByEmployeeId(employeeId)
+    return attendances;
 }
 
 
@@ -34,13 +35,12 @@ export const createAttendanceWithSession = async ({ employeeId, date }) => {
     );
     const attendanceId = attendanceResult.insertId;
     try {
-      const clockInTime = new Date().toISOString().split(".")[0]
+      const clockInTime = getIndianCurrentTime()
       const [result] = await connection.query(
         `INSERT INTO attendance_session(attendanceId, clockIn, clockOut, duration)
          VALUES (?, ?, NULL, 0)`,
         [attendanceId, clockInTime]
       );
-      console.log("result",result)
     } catch (err) {
       throw err; // Re-throw to trigger rollback
     }
@@ -69,19 +69,21 @@ export const attendance_saveSessionById = async({sessionId , clockOut , duration
 
 export const attendance_saveAttendanceById = async({attendanceId , totalHoursToday , isCompleteDay})=>{
     const [result] = await saveAttendanceById({attendanceId , totalHoursToday , isCompleteDay})
+
     return result;
 }
 
 export const attendance_saveSessionClockInByAttendanceId = async(data)=>{
-  console.log("data",data)
      await saveSessionClockInByAttendanceId(data)
     return true;
 }
 
-export const attendance_createNewSessionByAttendanceId = async({attendanceId , clockInTime})=>{
-    const [result] = await createNewSessionByAttendanceId({attendanceId , clockInTime})
+export const attendance_createNewSessionByAttendanceId = async({attendanceId })=>{
+    const [result] = await createNewSessionByAttendanceId({attendanceId })
     return result;
 }
 
-
-
+export const attendance_findByEmployeeId = async(data)=>{
+    const [attendance] = await findByEmployeeId(data)
+    return attendance[0];
+}

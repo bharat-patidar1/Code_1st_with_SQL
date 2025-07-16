@@ -3,12 +3,13 @@ import bcrypt from 'bcrypt'
 import { sendInviteEmail } from '../utils/sendInviteEmail.js'
 import jwt from 'jsonwebtoken'
 import { employee_findOneByEmail , employee_create, employee_findByEmailAndUpdatePassword, employee_findByIdAndDelete, emmployee_findByQuery, employee_findById } from "../services/employee.services.js";
+import getDataUri from "../utils/getDataUri.js";
 
 export const employeeRegister = async (req, res) => {
     try {
         const { name, email, phoneNumber, department, location } = req.body;
-        console.log(name)
         const existing = await employee_findOneByEmail({email});
+        console.log(existing)
         if (existing) {
             return res.status(400).json({
                 message: "Employee already exists",
@@ -28,6 +29,7 @@ export const employeeRegister = async (req, res) => {
         })
 
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ message: "Failed to create employee" });
     }
 }
@@ -286,3 +288,18 @@ export const getEmployeeDetail = async (req, res) => {
       });
     }
   };
+
+
+  export const updateProfilePhoto = async (req ,res)=>{
+    try {
+        const file = req.file;
+        const uri = getDataUri(file);
+        console.log(uri.content);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            success : false,
+            message : "Failed to update profile photo"
+        })
+    }
+  }

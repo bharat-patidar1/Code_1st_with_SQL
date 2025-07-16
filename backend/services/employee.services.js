@@ -10,8 +10,8 @@ export const employee_findAllName = async () => {
     return name;    
 }
 
-export const employee_findOneByEmail = async (email) => {
-    const [employee] = await findOneByEmail(email);
+export const employee_findOneByEmail = async ({email}) => {
+    const [employee] = await findOneByEmail({email});
     return employee[0];
 }
 

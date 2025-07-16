@@ -2,6 +2,7 @@ import pool from "../dbConnect.js";
 
 
 
+
 const createAdminTable = `
   CREATE TABLE IF NOT EXISTS admin (
     _id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,7 +29,7 @@ const createEmployeeTable = `CREATE TABLE IF NOT EXISTS employee (
   role VARCHAR(50) NOT NULL DEFAULT 'Employee',
   status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
   profileBio TEXT,
-  profilePhoto TEXT,
+  profilePhoto VARCHAR(512),
   profileSkills JSON DEFAULT (JSON_ARRAY()),  -- store array of skills
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -55,7 +56,7 @@ const createAttendaceTable = `CREATE TABLE IF NOT EXISTS attendance (
   employeeId INT NOT NULL,  -- Foreign key to Employee table
   date DATE NOT NULL,       -- assuming date string is ISO format (YYYY-MM-DD)
   sessions JSON DEFAULT (JSON_ARRAY()),  -- array of clockIn/clockOut/duration objects
-  totalHoursToday FLOAT DEFAULT 0,
+  totalHoursToday TIME DEFAULT 0,
   isCompleteDay BOOLEAN DEFAULT FALSE,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -66,9 +67,9 @@ const createAttendaceTable = `CREATE TABLE IF NOT EXISTS attendance (
 const createSessionsTable = `CREATE TABLE IF NOT EXISTS attendance_session (
   _id INT AUTO_INCREMENT PRIMARY KEY,
   attendanceId INT NOT NULL,  -- FK to attendance table
-  clockIn VARCHAR(255) NOT NULL,
-  clockOut VARCHAR(255) ,
-  duration FLOAT NOT NULL,
+  clockIn DATETIME NOT NULL,
+  clockOut DATETIME ,
+  duration INT NOT NULL UNSIGNED,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (attendanceId) REFERENCES attendance(_id) ON DELETE CASCADE
@@ -76,6 +77,7 @@ const createSessionsTable = `CREATE TABLE IF NOT EXISTS attendance_session (
 
 async function initDB() {
     try {
+        await pool.query(`USE railway`)
         await pool.query(createAdminTable);
         await pool.query(createEmployeeTable);
         await pool.query(createLeaveTable);

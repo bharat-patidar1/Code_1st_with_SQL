@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { setIsClockedin } from "@/redux/attendanceSlice";
 import { setTotalHours } from "@/redux/employeeSlice";
 import { CalendarIcon, ClockIcon, BellIcon, UserIcon, ArchiveIcon } from "lucide-react";
 import EmployeeNavbar from "./EmployeeNavbar";
+import Remember from "./Remember";
 
 axios.defaults.withCredentials = true;
 
@@ -20,30 +21,87 @@ export default function EmployeeDashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const totalSecondsRef = useRef(0);
+  const intervalRef = useRef(null);
+  const [isInitialized, setIsInitialized] = useState(false)
 
   const handleClockIn = async () => {
     try {
       setLoading(true);
-      const response = await axios.post(`${Attendance_API_END_POINT}/clockIn`, {withCredentials : true});
+      const response = await axios.post(`${Attendance_API_END_POINT}/clockIn`, { withCredentials: true });
       if (response.data.success) {
         dispatch(setIsClockedin(true));
+        // dispatch(setTotalHours(response.data.attendance.totalHoursToday));
+        console.log("totalHours At ClockIn", totalHours)
         toast.success("Successfully clocked in!");
       }
     } catch {
       toast.error("Failed to clock in.");
+      setIsInitialized(true);
     } finally {
       setLoading(false);
     }
   };
 
+  // Convert between HH:MM:SS ↔ seconds
+
+  const timeToSeconds = (timeStr) => {
+    const [hh, mm, ss] = timeStr.split(':').map(Number);
+    console.log(timeStr)
+    return hh * 3600 + mm * 60 + ss;
+  };
+
+  // Convert seconds back to 'HH:MM:SS' (for Redux/store)
+  const secondsToTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return [
+      hours.toString().padStart(2, '0'),
+      minutes.toString().padStart(2, '0'),
+      seconds.toString().padStart(2, '0')
+    ].join(':');
+  }
+
+  useEffect(() => {
+    // Initialize timer data whenever totalHours changes
+    if (totalHours && isClockedIn) {
+      totalSecondsRef.current = timeToSeconds(totalHours);
+      console.log("Initialized with:", totalHours, "=", totalSecondsRef.current, "seconds");
+
+      // Only mark as initialized if we're NOT clocked in, 
+      // or if clocked in, let the clock-in effect handle it
+      if (!isClockedIn) {
+        setIsInitialized(true);
+      }
+    }
+  }, [totalHours]);
+  // Start/stop counting when isClockedIn changes
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    if (isClockedIn) {
+      intervalRef.current = setInterval(() => {
+        totalSecondsRef.current += 1;
+        const newTime = secondsToTime(totalSecondsRef.current);
+        dispatch(setTotalHours(newTime)); // Update Redux (format: 'HH:MM:SS')
+      }, 1000);
+    } else {
+      clearInterval(intervalRef.current);
+    }
+
+    return () => clearInterval(intervalRef.current);
+  }, [isClockedIn, isInitialized, dispatch]);
+
   const handleClockOut = async () => {
     try {
       setLoading(true);
       // dispatch(setIsClockedin(false));
-      const response = await axios.post(`${Attendance_API_END_POINT}/clockOut`, {withCredentials : true});
+      const response = await axios.post(`${Attendance_API_END_POINT}/clockOut`, { withCredentials: true });
       if (response.data.success) {
         dispatch(setIsClockedin(false));
         dispatch(setTotalHours(response.data.attendance.totalHoursToday));
+        console.log("totalHours At ClockOut", totalHours)
         toast.success("Successfully clocked out!");
       }
     } catch {
@@ -55,7 +113,7 @@ export default function EmployeeDashboard() {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.get(`${Employee_API_END_POINT}/logout` , {withCredentials : true});
+      const response = await axios.get(`${Employee_API_END_POINT}/logout`, { withCredentials: true });
       if (response.data.success) {
         toast.success("Logged out!");
         navigate("/login");
@@ -64,10 +122,10 @@ export default function EmployeeDashboard() {
       toast.error("Logout failed.");
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <EmployeeNavbar />
+      <Remember />
       <main className="max-w-screen-xl mx-auto px-4 py-8 space-y-8">
         {/* Attendance Hours & History */}
         <section className="flex flex-wrap items-center justify-between gap-4">
@@ -120,7 +178,7 @@ export default function EmployeeDashboard() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Button
-                onClick={() => navigate("/employee/dashboard/applyLeavePage")}
+                onClick={() => navigate("/employee/dashboard/applyLeave")}
                 variant="outline"
                 className="w-full"
               >

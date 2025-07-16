@@ -1,4 +1,4 @@
-import { create, findAllLeavesWithEmployee, findByEmployeeId, findByIdAndEmployeeId, findById, updateStatusById  } from "../queries/leaves.query.js";
+import { create, findAllLeavesWithEmployee, findByEmployeeId, findByIdAndEmployeeId, findById, updateStatusById, findByIdAndDelete  } from "../queries/leaves.query.js";
 
 export const leave_create = async(data)=>{
     const leave = await create(data);
@@ -24,7 +24,7 @@ export const leave_findById = async(id)=>{
     
 
 export const leave_findByIdAndEmployeeId = async(data)=>{
-    const rows = await findByIdAndEmployeeId(data);
+    const [rows] = await findByIdAndEmployeeId(data);
     return rows[0];
 }
 

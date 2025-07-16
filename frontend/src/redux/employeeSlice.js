@@ -6,7 +6,7 @@ const employeeSlice = createSlice({
     initialState : {
         employee : null,
         allEmployees : [],
-        totalHours : 0
+        totalHours : null
     },
     reducers :{
         //actions

@@ -47,8 +47,8 @@ export const findByIdAndEmployeeId = ({leaveId , employeeId})=>{
   );
 }
 
-export const findByIdAndDelete = ({_id})=>{
-  return pool.query(`DELETE FROM leaves WHERE _id = ?;`,[_id])
+export const findByIdAndDelete = ({leaveId})=>{
+  return pool.query(`DELETE FROM leaves WHERE _id = ?;`,[leaveId])
 };
 
 export const updateStatusById = ({status , leaveId})=>{

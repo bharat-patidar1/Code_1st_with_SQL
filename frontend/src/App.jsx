@@ -14,6 +14,7 @@ import MyLeaves from './components/leave/MyLeaves'
 import AdminWorkHours from './components/admin/AdminWorkHours'
 import AdminAttendanceSummary from './components/admin/AdminAttendanceSummary'
 import EmployeeLeaves from './components/admin/EmployeeLeaves'
+import EmployeeProfile from './components/employee/EmployeeProfile'
 
 
 function App() {
@@ -36,8 +37,9 @@ function App() {
           <Route path="/employee/dashboard" element={<EmployeeDashboard/>}></Route>
           <Route path="/employee/forgetPassword" element={<ForgotPassword/>}></Route>
           <Route path="/employee/dashboard/history" element={<AttendanceHistory/>}></Route>
+          <Route path="/employee/dashboard/profile" element={<EmployeeProfile/>}></Route>
           {/* leave */}
-          <Route path="/employee/dashboard/applyLeavePage" element={<ApplyLeave/>}></Route>
+          <Route path="/employee/dashboard/applyLeave" element={<ApplyLeave/>}></Route>
           <Route path="/employee/dashboard/leaves" element={<MyLeaves/>}></Route>
         </Routes>
       </BrowserRouter>
