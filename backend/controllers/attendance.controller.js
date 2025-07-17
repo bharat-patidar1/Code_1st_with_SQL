@@ -33,7 +33,7 @@ export const employeeClockIn = async (req, res) => {
 
         await attendance_createNewSessionByAttendanceId({ attendanceId: attendance._id })
         await attendance_saveSessionClockInByAttendanceId({ attendanceId: attendance._id });
-        console.log("attendance" , attendance)
+        
         return res.status(200).json({
             success: true,
             message: "Clocked in successfully",
@@ -74,7 +74,7 @@ export const employeeClockOut = async (req, res) => {
         const clockOutTime = getIndianCurrentTime();
         //set clockout time
         const duration = calculateDurationInSeconds(lastSession.clockIn, clockOutTime);
-        console.log("duration" , duration)
+      
 
         //update sessions
         await attendance_saveSessionById({ sessionId: lastSession._id, clockOut: clockOutTime, duration: parseInt(duration)});
