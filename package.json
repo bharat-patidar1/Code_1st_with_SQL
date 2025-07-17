@@ -5,10 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js",
+    "dev": "nodemon backend/server.js",
     "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
-    "start": "nodemon server.js",
-    "init-db": "node utils/setupMySql/initDB.js"
+    "start": "nodemon backend/server.js",
+    "init-db": "node backend/utils/setupMySql/initDB.js"
   },
   "keywords": [],
   "author": "",
