@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-// In your actual project, you would import these from react-router-dom
+// In your actual project, you would uncomment these lines
 // import { Link, useNavigate } from 'react-router-dom';
+// import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"; // Assuming from shadcn/ui
+// import { Button } from "../ui/button"; // Assuming from shadcn/ui
 
 // --- Mock Components for Standalone Preview ---
 // In your project, remove these and use the actual imports from your libraries.
 
 const MockLink = ({ to, children, className }) => (
-  <a href={to} className={className} onClick={(e) => e.preventDefault()}>
+  <a href={to} className={className} onClick={(e) => { e.preventDefault(); console.log(`Link to: ${to}`); }}>
     {children}
   </a>
 );
@@ -14,7 +16,6 @@ const MockLink = ({ to, children, className }) => (
 const useMockNavigate = () => {
   return (path) => {
     console.log(`Navigating to: ${path}`);
-    // In a real app, this would change the URL.
   };
 };
 
@@ -38,14 +39,19 @@ const MenuIcon = (props) => (
   </svg>
 );
 
-// --- Reusable AdminLayout Component ---
-// This is the main component you will use to wrap your admin pages.
+// Mock Card components to replicate your UI library
+const Card = ({ onClick, children, className }) => <div onClick={onClick} className={`bg-white rounded-xl shadow-md ${className}`}>{children}</div>;
+const CardHeader = ({ children }) => <div className="p-6 pb-2">{children}</div>;
+const CardTitle = ({ children }) => <h3 className="font-semibold text-lg text-gray-800">{children}</h3>;
+const CardContent = ({ children }) => <div className="p-6 pt-0 text-gray-600">{children}</div>;
 
+
+// --- Reusable AdminLayout Component ---
 const AdminLayout = ({ children }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   
-  // Replace useMockNavigate with useNavigate in your actual app
-  const navigate = useMockNavigate(); 
+  // In your project, replace useMockNavigate with the real hook
+  const navigate = useMockNavigate();
   // const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -53,22 +59,24 @@ const AdminLayout = ({ children }) => {
     navigate("/");
   };
 
+  // Updated navLinks to match all dashboard cards
   const navLinks = [
     { title: "Dashboard", href: "/admin/dashboard" },
-    { title: "Employees", href: "/admin/dashboard/employees" },
+    { title: "Employee Overview", href: "/admin/dashboard/overview" },
+    { title: "Manage Employees", href: "/admin/dashboard/employees" },
     { title: "Attendance", href: "/admin/dashboard/attendanceSummary" },
     { title: "Leaves", href: "/admin/dashboard/employeeLeaves" },
+    { title: "Work Hour Tracker", href: "/admin/dashboard/workhour" },
   ];
 
-  // Component for the sidebar's content
   const SidebarContent = () => (
     <>
-      <div className="p-5 text-2xl font-bold border-b bg-white flex items-center">
+      <div className="p-5 text-2xl font-bold border-b bg-white flex items-center shrink-0">
         <span className="text-blue-600 mr-2">👨‍⚕️</span> Code 1st
       </div>
-      <nav className="mt-6 flex-1 flex flex-col space-y-1 px-3">
+      <nav className="mt-6 flex-1 flex flex-col space-y-1 px-3 overflow-y-auto">
         {navLinks.map((link) => (
-          // Replace MockLink with Link in your actual app
+          // In your project, replace MockLink with Link
           <MockLink
             key={link.title}
             to={link.href}
@@ -78,7 +86,7 @@ const AdminLayout = ({ children }) => {
           </MockLink>
         ))}
       </nav>
-      <div className="p-4 border-t mt-auto">
+      <div className="p-4 border-t mt-auto shrink-0">
         <Button variant="destructive" onClick={handleLogout} className="w-full">
           Logout
         </Button>
@@ -88,26 +96,15 @@ const AdminLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={() => setSidebarOpen(false)}></div>
       )}
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-30 transform transition-transform duration-300 ease-in-out flex flex-col
-                   ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-                   lg:translate-x-0`}
-      >
+      <aside className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-30 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         <SidebarContent />
       </aside>
 
-      {/* Main Content Area */}
       <div className="lg:ml-64 transition-all duration-300">
-        {/* Mobile Top Bar */}
         <header className="lg:hidden bg-white shadow-sm py-4 px-6 flex items-center justify-between sticky top-0 z-10">
           <div className="text-xl font-semibold">👨‍⚕️ Code 1st Health</div>
           <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="text-gray-600 hover:text-gray-900">
@@ -115,7 +112,6 @@ const AdminLayout = ({ children }) => {
           </button>
         </header>
 
-        {/* This is where your page-specific content will be rendered */}
         <main className="p-6 md:p-8">
           {children}
         </main>
@@ -124,39 +120,54 @@ const AdminLayout = ({ children }) => {
   );
 };
 
+// --- AdminDashboard Component ---
+// This contains your grid of cards.
+const AdminDashboard = () => {
+  // In your project, replace useMockNavigate with the real hook
+  const navigate = useMockNavigate();
+  // const navigate = useNavigate();
 
-// --- Example Usage ---
-// This demonstrates how to use the AdminLayout component.
-// In your app's routing setup, you would render your pages like this.
+  const cardClassName = "cursor-pointer border-2 border-transparent hover:border-blue-400 hover:shadow-xl transition-all duration-300";
 
-export default function App() {
-  // This would be your page component, e.g., DashboardPage
-  const DashboardPageContent = (
+  return (
     <>
-      <h1 className="text-3xl font-bold text-gray-800 mb-4">Dashboard</h1>
-      <p className="text-gray-600">
-        Welcome to the admin panel. This content is rendered inside the AdminLayout.
-      </p>
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h3 className="font-semibold text-lg">Employees</h3>
-          <p className="text-gray-500 mt-2">Manage employee records.</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h3 className="font-semibold text-lg">Attendance</h3>
-          <p className="text-gray-500 mt-2">View attendance summaries.</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h3 className="font-semibold text-lg">Leave Requests</h3>
-          <p className="text-gray-500 mt-2">Approve or deny requests.</p>
-        </div>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card onClick={() => navigate('/admin/dashboard/overview')} className={cardClassName}>
+          <CardHeader><CardTitle>Employee Overview</CardTitle></CardHeader>
+          <CardContent><p>View all employees, active/inactive status, and more.</p></CardContent>
+        </Card>
+
+        <Card onClick={() => navigate('/admin/dashboard/attendanceSummary')} className={cardClassName}>
+          <CardHeader><CardTitle>Attendance Summary</CardTitle></CardHeader>
+          <CardContent><p>Track daily and weekly attendance trends.</p></CardContent>
+        </Card>
+
+        <Card onClick={() => navigate('/admin/dashboard/employeeLeaves')} className={cardClassName}>
+          <CardHeader><CardTitle>Leave Management</CardTitle></CardHeader>
+          <CardContent><p>View and manage all leave requests submitted by employees.</p></CardContent>
+        </Card>
+
+        <Card onClick={() => navigate('/admin/dashboard/workhour')} className={cardClassName}>
+          <CardHeader><CardTitle>Work Hour Tracker</CardTitle></CardHeader>
+          <CardContent><p>Monitor daily/weekly work hours and highlight low performers.</p></CardContent>
+        </Card>
+
+        <Card onClick={() => navigate('/admin/dashboard/employees')} className={cardClassName}>
+          <CardHeader><CardTitle>Manage Employees</CardTitle></CardHeader>
+          <CardContent><p>View, invite, or remove employees from the system.</p></CardContent>
+        </Card>
       </div>
     </>
   );
+};
 
+// --- Main App Component (Example Usage) ---
+// This shows how to put the AdminDashboard inside the AdminLayout.
+export default function App() {
   return (
     <AdminLayout>
-      {DashboardPageContent}
+      <AdminDashboard />
     </AdminLayout>
   );
 }
