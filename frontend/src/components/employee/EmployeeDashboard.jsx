@@ -11,7 +11,6 @@ import { setIsClockedin } from "@/redux/attendanceSlice";
 import { setTotalHours } from "@/redux/employeeSlice";
 import { CalendarIcon, ClockIcon, BellIcon, UserIcon, ArchiveIcon } from "lucide-react";
 import EmployeeNavbar from "./EmployeeNavbar";
-import Remember from "./Remember";
 
 axios.defaults.withCredentials = true;
 
@@ -125,7 +124,6 @@ export default function EmployeeDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <EmployeeNavbar />
-      <Remember />
       <main className="max-w-screen-xl mx-auto px-4 py-8 space-y-8">
         {/* Attendance Hours & History */}
         <section className="flex flex-wrap items-center justify-between gap-4">
