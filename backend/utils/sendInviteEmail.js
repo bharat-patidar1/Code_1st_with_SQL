@@ -1,23 +1,17 @@
 import nodemailer from "nodemailer";
 
-export const sendInviteEmail = async (email, tempPassword) => {
-  // Step 1: Create a transporter with SMTP configuration
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // use STARTTLS, not SSL
-    requireTLS: true,
-    auth: {
-      user: process.env.EMAIL_USER,     // e.g. code1st@gmail.com
-      pass: process.env.EMAIL_PASS      // app password
-    },
-    logger: true,  // enable debug logging
-    debug: true
-  });
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.sendinblue.com",
+  port: 587,
+  auth: {
+    user: process.env.SENDINBLUE_USER,     // your Sendinblue email
+    pass: process.env.SENDINBLUE_PASS      // your SMTP master password
+  }
+});
 
-  // Step 2: Define the email details
-  const mailOptions = {
-    from: `"Code 1st HealthCare" <${process.env.EMAIL_USER}>`,
+export const sendInviteEmail = async (email, tempPassword) => {
+  await transporter.sendMail({
+    from: `"Code 1st HealthCare" <${process.env.SENDINBLUE_USER}>`,
     to: email,
     subject: "You're invited to Code 1st Healthcare System",
     html: `
@@ -29,14 +23,5 @@ export const sendInviteEmail = async (email, tempPassword) => {
       <p>Login page: <a href="https://code-1st-with-sql.onrender.com">Click here</a></p>
       <p>Regards,<br/>Code 1st Team</p>
     `
-  };
-
-  // Step 3: Send the email and handle errors
-  try {
-    let info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw error;
-  }
+  });
 };
