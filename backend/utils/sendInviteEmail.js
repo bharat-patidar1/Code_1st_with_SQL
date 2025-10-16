@@ -1,17 +1,21 @@
-// utils/email.js
 import nodemailer from "nodemailer";
 
 export const sendInviteEmail = async (email, tempPassword) => {
-  // Step 1: Create a transporter
+  // Step 1: Create a transporter with SMTP configuration
   const transporter = nodemailer.createTransport({
-    service: "gmail", // or "hotmail", or use custom SMTP
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // use STARTTLS, not SSL
+    requireTLS: true,
     auth: {
       user: process.env.EMAIL_USER,     // e.g. code1st@gmail.com
-      pass: process.env.EMAIL_PASS      // app password (not your real Gmail password)
-    }
+      pass: process.env.EMAIL_PASS      // app password
+    },
+    logger: true,  // enable debug logging
+    debug: true
   });
 
-  // Step 2: Create the email content
+  // Step 2: Define the email details
   const mailOptions = {
     from: `"Code 1st HealthCare" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -27,6 +31,12 @@ export const sendInviteEmail = async (email, tempPassword) => {
     `
   };
 
-  // Step 3: Send the email
-  await transporter.sendMail(mailOptions);
+  // Step 3: Send the email and handle errors
+  try {
+    let info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
 };
