@@ -1,6 +1,5 @@
 import pool from "../dbConnect.js";
-
-
+import bcrypt from "bcrypt"
 
 
 const createAdminTable = `
@@ -75,10 +74,31 @@ const createSessionsTable = `CREATE TABLE IF NOT EXISTS attendance_session (
   FOREIGN KEY (attendanceId) REFERENCES attendance(_id) ON DELETE CASCADE
 );`;
 
+const insertInitialAdmin = async () => {
+  const hashedPassword = await bcrypt.hash("bharat", 10);
+
+  const query = `
+    INSERT IGNORE INTO admin 
+    (name, email, phoneNumber, password, role)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+
+  await pool.query(query, [
+    "Bharat Patidar",
+    "bharat@gmail.com",
+    7024187781,
+    hashedPassword,
+    "Admin",
+  ]);
+};
+
+
+
 async function initDB() {
     try {
         await pool.query(`USE railway`)
         await pool.query(createAdminTable);
+        await insertInitialAdmin();
         await pool.query(createEmployeeTable);
         await pool.query(createLeaveTable);
         await pool.query(createAttendaceTable);
