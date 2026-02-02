@@ -67,8 +67,8 @@ const createSessionsTable = `CREATE TABLE IF NOT EXISTS attendance_session (
   _id INT AUTO_INCREMENT PRIMARY KEY,
   attendanceId INT NOT NULL,  -- FK to attendance table
   clockIn DATETIME NOT NULL,
-  clockOut DATETIME ,
-  duration INT NOT NULL UNSIGNED,
+  clockOut DATETIME,
+  duration INT UNSIGNED NOT NULL,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (attendanceId) REFERENCES attendance(_id) ON DELETE CASCADE
