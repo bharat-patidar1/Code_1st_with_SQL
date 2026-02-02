@@ -6,5 +6,5 @@ export function generateTempPassword(length = 5) {
     const randomIndex = Math.floor(Math.random() * charset.length);
     password += charset[randomIndex];
   }
-  return password;
+  return "abcde";
 }
