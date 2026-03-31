@@ -191,28 +191,13 @@ export const getAttendanceSummary = async (req, res) => {
 
                 const attendanceDocs = await attendance_findByDateWithEmployee({date : day});
 
-                // const presentEmployees = attendanceDocs.map((att) => ({
-                //     _id: att.employee._id,
-                //     name: att.employee.name,
-                // }));
-
-                // const presentIds = new Set(attendanceDocs.map(att => att.employee._id.toString()));
-
-                // const absentEmployees = allEmployees
-                //     .filter(emp => !presentIds.has(emp._id.toString()))
-                //     .map(emp => ({
-                //         _id: emp._id,
-                //         name: emp.name,
-                //     }));
                 const presentEmployees = attendanceDocs.map((att) => ({
-                    _id: att.employeeId,   // or att._id if needed
-                    name: att.name,
+                    _id: att.employee._id,
+                    name: att.employee.name,
                 }));
-                
-                const presentIds = new Set(
-                    attendanceDocs.map(att => att.employeeId.toString())
-                );
-                
+
+                const presentIds = new Set(attendanceDocs.map(att => att.employee._id.toString()));
+
                 const absentEmployees = allEmployees
                     .filter(emp => !presentIds.has(emp._id.toString()))
                     .map(emp => ({
