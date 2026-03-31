@@ -7,14 +7,11 @@ export const attendance_findWorkByDates = async(date)=>{
     return attendance;
 }
     
-// export const attendance_findByDateWithEmployee = async(date)=>{
-//     const [attendance] = await findByDateWithEmployee(date)
-//     return attendance;
-// }
-export const attendance_findByDateWithEmployee = async (date) => {
-  const attendance = await findByDateWithEmployee(date);
-  return attendance;
-};
+export const attendance_findByDateWithEmployee = async(date)=>{
+    const [attendance] = await findByDateWithEmployee(date)
+    return attendance;
+}
+
 
 export const attendance_findByEmployeeAndDate = async({employeeId , date})=>{
     const [attendance] = await findByEmployeeAndDate({employeeId , date})
