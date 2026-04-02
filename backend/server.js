@@ -8,8 +8,8 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import pool from './utils/dbConnect.js';
 //no need for dotenv here , dbConnect sbse pehle run hori
-// import dotenv from 'dotenv';
-// dotenv.config();
+import dotenv from 'dotenv';
+dotenv.config();
 
 // dbConnect();
 const _dirname = path.resolve()
