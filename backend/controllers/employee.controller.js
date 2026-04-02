@@ -22,11 +22,16 @@ export const employeeRegister = async (req, res) => {
         const employee = await employee_create({name , email , phoneNumber , department , location , password : hashedPass});
         await sendInviteEmail(email, tempPass);
 
-        return res.status(201).json({
-            success: true,
-            message: "Employee invited successfully",
-            employee
-        })
+        // return res.status(201).json({
+        //     success: true,
+        //     message: "Employee invited successfully",
+        //     employee
+        // })
+        res.status(201).json({ message: "Employee created successfully" });
+        // 🔥 send email AFTER response (non-blocking)
+        sendInviteEmail(email, tempPass).catch(err =>
+        console.error("Email failed:", err)
+        );      
 
     } catch (error) {
         console.log(error)
